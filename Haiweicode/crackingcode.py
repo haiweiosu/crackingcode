@@ -160,15 +160,51 @@ def cracking_password (case_number, row_list):
 	    		guess = element
 	return guess
 
-sweetwords = parse_sweetword_sets(finaloutput.csv)
-print sweetwords
+def main():
 
-a = truepassword_list(sweetwords, len(sweetwords))
+    # Return early if not enough args
+    if len(sys.argv) < 4:
+        print "Wrong number of arguments."
+        return
+
+    # Parse command-line arguments
+    outputf = sys.argv[1]
+    n = int(sys.argv[1])
+    m = int(sys.argv[2])
+    inputf = sys.argv[3]
+
+    sweetwords = parse_sweetword_sets(inputf) # Parse input file
+    print sweetwords
+
+#     # get number of passwords desired
+#     user_input = n
+#     user_input = user_input - 1
+
+#     # read password files
+#     write_into_file1(passwords)
+#     # generate passwords
+#     new_passwords = generate_passwords(passwords, user_input)
+#     # combine_files(new_pw_list, new_passwords)
+
+#     write_into_file2(new_passwords)
+#     filename1 = "true_password"
+#     filename2 = "honey_password"
+#     combine_files(filename1, filename2)
+
+# # import cProfile
+# # cProfile.run("main()")
+
+main()
+
+# sweetwords = parse_sweetword_sets(finaloutput)
+# print sweetwords
+
+# a = truepassword_list(sweetwords, len(sweetwords))
 
 
-def truepassword_list (data_row_file, m):
-	finalguess = []
-	for i in m:
-		finalguess.add(cracking_password(check_pattern(data_row_file[i]), data_row_file[i]))
+# def truepassword_list (data_row_file, m):
+# 	finalguess = []
+# 	for i in m:
+# 		finalguess.add(cracking_password(check_pattern(data_row_file[i]), data_row_file[i]))
 
-	return finalguess
+# 	return finalguess
