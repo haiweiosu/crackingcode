@@ -20,14 +20,14 @@ from collections import Counter
 import csv
 
 def parse_sweetword_sets(sweetwords_file):
-    """
-    Parse csv sweetwords into 2d matrix array.
-    """
-    sweetwords = []
-    with open(sweetwords_file, 'rb') as f:
-        reader = csv.reader(f)
-        sweetwords = list(reader)
-    return sweetwords
+	"""
+	Parse csv sweetwords into 2d matrix array.
+	"""
+	sweetwords = []
+	with open(sweetwords_file, 'rb') as f:
+		reader = csv.reader(f)
+		sweetwords = list(reader)
+	return sweetwords
 
 #Given a row of sweetwords, this function identifies which 
 #following 3 cases it applied to.The function categorizes a 
@@ -46,9 +46,9 @@ def check_pattern (row_list):
 			numbercount += 1
 
 	if charcount == len(word):
-		return 3
-	else:
 		return 2
+	else:
+		return 1
 
 #Given three cases, this function will crack the passwords 
 #based on the case number returned by ch eck_pattern function
@@ -57,84 +57,96 @@ def check_pattern (row_list):
 # 2: password containing only letters
 def cracking_password (case_number, row_list):
 	#Dealing with the case where password containing only numbers
-	if case_number == 1:
-		serail_list = []
-		for i in len(row_list):
-			string = str(row_list[i-1])
-			isSequence = False
-			#First step, select numbers are in sequence. If it is in sequence, add it into seail_list
-			for j in len(string):
-				if int(string[j+1]) - int(string[j]) == int(string[j+2]) - int(string[j+1]):
-					isSequence = True
-					continue
-				else:
+	guess = None
+	if case_number == 0:
+		serail_list2 = []
+		for number in row_list:
+			if len(number) <= 1:
+				return random.choice(row_list)
+			prev_digit = number[0]
+			gap = int(number[1] or 0) - int(number[0] or 0)
+			# print gap
+			isSequence = True
+			count = 0
+			for idx in range(1, len(number)):
+				if gap != (int(number[idx]) - int(prev_digit)):
+					isSequence = False
 					break
-			if isSequence == True:
-				serail_list.append(string)
+				else:
+					prev_digit = number[idx]
+					count += 1
+			if isSequence:
+				serail_list2.append(number)
+			elif not isSequence and count == len(number) - 2:
+				serail_list2.append(number)
+			else:
+				guess = row_list.index(random.choice(row_list))
+		# print guess
 
 		#Second step, calculate number of increasing sequence number vs. decreasing sequence number
-		increasecount = 0
-		decreasecount = 0
-		increase_list = []
-		decrease_list = []
-		for i in len(serail_list):
-			element = str(serail_list[i-1])
-			if int(element[1]) - int(element[0]) == 1:
-				increasecount += 1
-				increase_list.add(element)
-			elif int(element[1]) - int(element[0]) == -1:
-				decreasecount += 1
-				decrease_list.add(element)
-		#if increasecount larger than decreasecount, choose the smallest increasing sequence number
-		if increasecount >= decreasecount:
-			guess = min(int(s) for s in increase_list)
-		#else, choose the largest decreasing sequence number
-		else:
-			guess = max(int(s) for s in decrease_list)
+		if len(serail_list2) != 0:
+			increase_list = []
+			decrease_list = []
+			# print serail_list2
+			for i in range(0, len(serail_list2)):
+				element = serail_list2[i]
+				if int(element[1]) - int(element[0]) >= 0 :
+					increase_list.append(element)
+				elif int(element[1]) - int(element[0]) < 0:
+					decrease_list.append(element)
+			#if increasecount larger than decreasecount, choose the smallest increasing sequence number
+			if len(increase_list) >= len(decrease_list):
+				guess = increase_list.index(min(increase_list))
+			#else, choose the largest decreasing sequence number
+			else:
+				guess = decrease_list.index(max(decrease_list))
+		# print increase_list
 
 	#Dealing with the case where password mixing with nubers and letters
-	elif case_number == 2:
+	elif case_number == 1:
 		serail_list = []
 		#First, get the numerical part
-		for b in len(row_list):
-			string = str(row_list[i-1])
+		for b in range(len(row_list)):
+			string = str(row_list[b-1])
 			number = filter(str.isdigit, string)
-			serail_list.add(number)
-
+			letter = filter(str.isalpha, string)
+			serail_list.append(number)
+		# print serail_list
 		#repeat case1 algorithm
 		serail_list2 = []
-		for i in len(serail_list):
-			string = str(serail_list[i-1])
-			isSequence = False
-			#First step, select numbers are in sequence. If it is in sequence, add it into seail_list
-			for j in len(string):
-				if int(string[j+1]) - int(string[j]) == int(string[j+2]) - int(string[j+1]):
-					isSequence = True
-					continue
-				else:
+		for number in serail_list:
+			if len(number) <= 1:
+				return row_list.index(random.choice(row_list))
+			prev_digit = number[0]
+			gap = int(number[1]) - int(number[0])
+			isSequence = True
+			for idx in range(1, len(number)):
+				if gap != (int(number[idx]) - int(prev_digit)):
+					isSequence = False
 					break
-			if isSequence == True:
-				serail_list2.append(string)
+				else:
+					prev_digit = number[idx]
+			if isSequence:
+				serail_list2.append(number)
 
 		#Second step, calculate number of increasing sequence number vs. decreasing sequence number
-		increasecount = 0
-		decreasecount = 0
 		increase_list = []
 		decrease_list = []
-		for i in len(serail_list2):
-			element = str(serail_list2[i-1])
+		# print serail_list2
+		for i in range(0, len(serail_list2)):
+			element = serail_list2[i]
 			if int(element[1]) - int(element[0]) == 1:
-				increasecount += 1
-				increase_list.add(element)
+				increase_list.append(element)
 			elif int(element[1]) - int(element[0]) == -1:
-				decreasecount += 1
-				decrease_list.add(element)
+				decrease_list.append(element)
 		#if increasecount larger than decreasecount, choose the smallest increasing sequence number
-		if increasecount >= decreasecount:
-			guess = min(int(s) for s in increase_list)
+		if len(increase_list) >= len(decrease_list):
+			temp = letter + min(increase_list)
+			guess = row_list.index(temp)
 		#else, choose the largest decreasing sequence number
 		else:
-			guess = max(int(s) for s in decrease_list)
+			temp = letter + max(decrease_list)
+			guess = row_list.index(temp)
 
 	#Dealing with the case where passwords containing only letters
 	else:
@@ -142,69 +154,47 @@ def cracking_password (case_number, row_list):
 		noSpeciallist = []
 		for c in row_list:
 			if not any(ch in "ABCDEFGHIJKLMNOPQRSTUVWXYZ" for ch in c):
-			     noCapitallist.add(c)
+				 noCapitallist.append(c)
 			else:
 				continue
-
 		for d in noCapitallist:
 			if any(h in "12$@0" for h in d):
 				break
-	    	else:
-	    		noSpeciallist.add(d)
+			else:
+				noSpeciallist.append(d)
 
 		e = enchant.Dict("en_US")
 
-		for element in noSpeciallist:
-			isword = e.check(element)
-	    	if isword == True:
-	    		guess = element
+		for i, element in enumerate(noSpeciallist):
+			isword = e.check(element) or e.check(element.title())
+			if isword:
+				guess = i
+			else:
+				guess = noSpeciallist.index(random.choice(noSpeciallist))
 	return guess
 
 def main():
 
-    # Return early if not enough args
-    if len(sys.argv) < 4:
-        print "Wrong number of arguments."
-        return
+	# Return early if not enough args
+	if len(sys.argv) < 4:
+		print "Wrong number of arguments."
+		return
 
-    # Parse command-line arguments
-    outputf = sys.argv[1]
-    n = int(sys.argv[1])
-    m = int(sys.argv[2])
-    inputf = sys.argv[3]
+	# Parse command-line arguments
+	outputf = sys.argv[1]
+	n = int(sys.argv[1])
+	m = int(sys.argv[2])
+	inputf = sys.argv[3]
 
-    sweetwords = parse_sweetword_sets(inputf) # Parse input file
-    print sweetwords
 
-#     # get number of passwords desired
-#     user_input = n
-#     user_input = user_input - 1
+	sweetwords = parse_sweetword_sets(inputf) # Parse input file
 
-#     # read password files
-#     write_into_file1(passwords)
-#     # generate passwords
-#     new_passwords = generate_passwords(passwords, user_input)
-#     # combine_files(new_pw_list, new_passwords)
+	finalguess = []
+	for i in sweetwords:
+		a = check_pattern(i)
+		b = cracking_password(a, i)
+		finalguess.append(b)
+	print finalguess
 
-#     write_into_file2(new_passwords)
-#     filename1 = "true_password"
-#     filename2 = "honey_password"
-#     combine_files(filename1, filename2)
-
-# # import cProfile
-# # cProfile.run("main()")
 
 main()
-
-# sweetwords = parse_sweetword_sets(finaloutput)
-# print sweetwords
-
-# a = truepassword_list(sweetwords, len(sweetwords))
-
-
-# def truepassword_list (data_row_file, m):
-# 	finalguess = []
-# 	for i in m:
-# 		finalguess.add(cracking_password(check_pattern(data_row_file[i]), data_row_file[i]))
-
-# 	return finalguess
